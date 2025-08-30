@@ -9,6 +9,5 @@ include 'exchangeApplication'
 include 'exchangeGeneratorApplication'
 include 'gatewayService'
 include 'notificationsApplication'
-include 'notificationsApplication:transferApplication'
-findProject(':notificationsApplication:transferApplication')?.name = 'transferApplication'
+include 'transferApplication'
 

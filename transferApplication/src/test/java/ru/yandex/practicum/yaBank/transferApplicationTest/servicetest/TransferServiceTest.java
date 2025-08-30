@@ -8,13 +8,23 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockReset;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.yandex.practicum.yaBank.transferApplication.TransferApplication;
-import ru.yandex.practicum.yaBank.transferApplication.dto.*;
-import ru.yandex.practicum.yaBank.transferApplication.service.*;
+import ru.yandex.practicum.yaBank.transferApplication.dto.AccountOperationDto;
+import ru.yandex.practicum.yaBank.transferApplication.dto.BlockerDto;
+import ru.yandex.practicum.yaBank.transferApplication.dto.CurrencyRateDto;
+import ru.yandex.practicum.yaBank.transferApplication.dto.HttpResponseDto;
+import ru.yandex.practicum.yaBank.transferApplication.dto.TransferOperationDto;
+import ru.yandex.practicum.yaBank.transferApplication.service.AccountApplicationService;
+import ru.yandex.practicum.yaBank.transferApplication.service.BlockerApplicationService;
+import ru.yandex.practicum.yaBank.transferApplication.service.ExchangeApplicationService;
+import ru.yandex.practicum.yaBank.transferApplication.service.NotificationService;
+import ru.yandex.practicum.yaBank.transferApplication.service.TransferService;
 import ru.yandex.practicum.yaBank.transferApplicationTest.TestSecurityConfig;
 
 import java.util.List;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @SpringBootTest(classes = {TransferApplication.class, TestSecurityConfig.class})

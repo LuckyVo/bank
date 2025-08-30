@@ -18,6 +18,7 @@
             <option value="$PROJECT_DIR$/exchangeGeneratorApplication" />
             <option value="$PROJECT_DIR$/gatewayService" />
             <option value="$PROJECT_DIR$/notificationsApplication" />
+            <option value="$PROJECT_DIR$/notificationsApplication/transferApplication" />
           </set>
         </option>
       </GradleProjectSettings>

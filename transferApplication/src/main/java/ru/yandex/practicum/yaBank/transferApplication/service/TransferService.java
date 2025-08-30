@@ -69,7 +69,7 @@ public class TransferService {
         }
 
         //Конвертация суммы, если валюты различаются
-        double convertedAmount = convertAmount(fromCurrency, toCurrency, amount);
+        double convertedAmount = convertAmount(fromCurrency, toCurrency, amount);;
 
         //Зачисление средств на счет получателя
         AccountOperationDto cashInDto = AccountOperationDto.builder()
