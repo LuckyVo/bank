@@ -49,7 +49,7 @@
 1. Клонирование репозитория
 
 ```bash
-git clone https://github.com/pinfixalesha/yaBank.git 
+git clone https://github.com/LuckyVo/bank.git
 ```
 
 2. Соберите приложение с помощью Gradle:
@@ -79,6 +79,8 @@ git clone https://github.com/pinfixalesha/yaBank.git
 - Пример
 >192.168.49.2 gateway-ingress.yabank.local
 
+Для локального запуска следует добавить DNS имя для Kafka
+127.0.0.1 yandex.kafka.ru
 
 7. Активируем Docker-окружение Minikube
    ```bash

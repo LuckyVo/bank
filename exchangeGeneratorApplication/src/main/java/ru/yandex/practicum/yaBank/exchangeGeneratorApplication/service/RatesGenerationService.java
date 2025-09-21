@@ -1,10 +1,13 @@
 package ru.yandex.practicum.yaBank.exchangeGeneratorApplication.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.yaBank.exchangeGeneratorApplication.dto.CurrencyRateDto;
 import ru.yandex.practicum.yaBank.exchangeGeneratorApplication.dto.HttpResponseDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -13,17 +16,30 @@ import java.util.List;
 import java.util.Random;
 
 @Service
+@RequiredArgsConstructor
 public class RatesGenerationService {
 
+    private static final Logger log = LoggerFactory.getLogger(RatesGenerationService.class);
+
     @Autowired
-    private ExchangeApplicationService exchangeApplicationService;
+    private final ExchangeApplicationService exchangeApplicationService;
+
+    @Autowired
+    private final ExchangeProducer exchangeProducer;
 
     private static final Random random = new Random();
 
     @Scheduled(fixedRate = 10000)
     public void generateRates() {
         List<CurrencyRateDto> currencyRateDtos = generateRandomRates();
-        HttpResponseDto response = exchangeApplicationService.sendRates(currencyRateDtos);
+        log.info("Отправка курсов валют "+currencyRateDtos);
+        HttpResponseDto response = exchangeProducer.sendRates(currencyRateDtos);
+        //HttpResponseDto response = exchangeApplicationService.sendRates(currencyRateDtos);
+        if (response!=null) {
+            log.info("Результат отправки " + response.getStatusCode() + " " + response.getStatusMessage());
+        } else {
+            log.info("Результат отправки null");
+        }
     }
 
     private List<CurrencyRateDto> generateRandomRates() {

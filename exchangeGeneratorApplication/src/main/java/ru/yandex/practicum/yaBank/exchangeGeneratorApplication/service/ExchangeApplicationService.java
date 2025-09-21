@@ -1,5 +1,7 @@
 package ru.yandex.practicum.yaBank.exchangeGeneratorApplication.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -17,6 +19,8 @@ import java.util.List;
 @Service
 public class ExchangeApplicationService {
 
+    private static final Logger log = LoggerFactory.getLogger(ExchangeApplicationService.class);
+
     @Autowired
     private RestClient restClient;
 
@@ -24,11 +28,12 @@ public class ExchangeApplicationService {
     private String exchangeApplicationUrl;
 
     @Retryable(
-        value = {ResourceAccessException.class}, // Повторять при ошибках соединения
-        maxAttempts = 3,                        // Максимальное количество попыток
-        backoff = @Backoff(delay = 1000)        // Задержка между попытками (в миллисекундах)
+            value = {ResourceAccessException.class}, // Повторять при ошибках соединения
+            maxAttempts = 3,                        // Максимальное количество попыток
+            backoff = @Backoff(delay = 1000)        // Задержка между попытками (в миллисекундах)
     )
     public HttpResponseDto sendRates(List<CurrencyRateDto> currencyRateDtos) {
+        log.info("URL " + exchangeApplicationUrl);
         try {
             return restClient.post()
                     .uri(exchangeApplicationUrl)
@@ -39,7 +44,7 @@ public class ExchangeApplicationService {
         } catch (Exception e) {
             return HttpResponseDto.builder()
                     .statusCode("500")
-                    .statusMessage("Не удалось проверить подозрительную операцию. Причина: " + e.getMessage())
+                    .statusMessage("Не удалось отправить курсы валют. Причина: " + e.getMessage())
                     .build();
         }
     }
