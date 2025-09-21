@@ -55,6 +55,7 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	testImplementation 'com.h2database:h2'
+	testImplementation 'org.springframework.kafka:spring-kafka-test'
 
 	// Spring Cloud Contract Verifier (для генерации тестов контрактов)
 	testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier:4.2.1'
