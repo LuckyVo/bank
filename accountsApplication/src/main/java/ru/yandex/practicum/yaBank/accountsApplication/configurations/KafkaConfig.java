@@ -28,7 +28,7 @@ public class KafkaConfig {
                 new StringSerializer(),
                 new JsonSerializer<NotificationDto>()
         );
-        KafkaTemplate<String, NotificationDto> kafkaTemplate=new KafkaTemplate<>(producerFactory);
+        KafkaTemplate<String, NotificationDto> kafkaTemplate = new KafkaTemplate<>(producerFactory);
         kafkaTemplate.setObservationEnabled(true);
         return kafkaTemplate;
     }

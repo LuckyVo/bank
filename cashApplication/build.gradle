@@ -69,8 +69,9 @@ dependencies {
 	// Spring Boot OAuth2 Resource Server
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 	implementation 'org.springframework.security:spring-security-oauth2-jose'
+    implementation project(path: ':notificationsApplication')
 
-	compileOnly 'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 
 	//Тестирование
