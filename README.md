@@ -120,10 +120,14 @@ git clone https://github.com/LuckyVo/bank.git
    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.1/deploy/static/provider/cloud/deploy.yaml
    kubectl get svc -n ingress-nginx
    ```
-11. Обновление helm чартов
+
+11. Добавление внешних репозитории
    ```bash
-   cd ya-bank
-   helm dependency update .
+   helm repo add elastic https://helm.elastic.co
+   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+   helm repo add grafana https://grafana.github.io/helm-charts
+   helm repo add stable https://charts.helm.sh/stable
+   helm repo update
    ```
 12. Запуск
    ```bash
