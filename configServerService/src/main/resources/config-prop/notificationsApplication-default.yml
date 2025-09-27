@@ -32,6 +32,8 @@ spring:
       client-id: yandex-practicum
     properties:
       security.protocol: PLAINTEXT
+    template:
+      observation-enabled: true
 server:
   port: ${NOTIFICATIONS_SERVER_PORT}
 eureka:
@@ -44,3 +46,19 @@ eureka:
 logging:
   level:
     liquibase: DEBUG
+
+management:
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_SERVER_URL}
+  tracing:
+    sampling:
+      probability: 1
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  metrics:
+    export:
+      prometheus:
+        enabled: true

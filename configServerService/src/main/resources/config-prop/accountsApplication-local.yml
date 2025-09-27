@@ -26,6 +26,7 @@ spring:
           keycloak:
             token-uri: http://localhost:8282/realms/yabank/protocol/openid-connect/token
   kafka:
+    bootstrap-servers: yandex.kafka.ru:9092
     producer:
       bootstrap-servers: yandex.kafka.ru:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -36,6 +37,8 @@ spring:
       client-id: yandex-practicum
     properties:
       security.protocol: PLAINTEXT
+    template:
+      observation-enabled: true
 server:
   port: 8083
 eureka:
@@ -49,3 +52,19 @@ ya-bank:
 logging:
   level:
     liquibase: DEBUG
+
+management:
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+  tracing:
+    sampling:
+      probability: 1
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  metrics:
+    export:
+      prometheus:
+        enabled: true

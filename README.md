@@ -25,6 +25,13 @@
 - **Service Discovery и Gateway API:** Kubernetes Ingress
 - **Externalized/Distributed Config:** Kubernetes ConfigMaps
 - **CI/CD:** Jenkins
+- **Apache Kafka**: Взаимодействие с микросервисом Notifications, Exchange с использованием платформы Apache Kafka
+- **Трейсинг запросов**: Система распределённых трассировок Zipkin
+- **Cистема сбора и анализа метрик**: система сбора и анализа метрик Prometheus
+- **Платформа для визуализации, мониторинга и анализа данных**: Grafana
+- - **ELK-стек**: Logstash - логирование сообщений в Apache Kafka
+
+
 
 ## Структура микросервисов
 
@@ -91,6 +98,7 @@ git clone https://github.com/LuckyVo/bank.git
    ```bash
    helm pull oci://registry-1.docker.io/bitnamicharts/keycloak --version 24.7.3
    helm pull oci://registry-1.docker.io/bitnamicharts/postgresql --version 14.2.3
+   helm pull oci://registry-1.docker.io/bitnamicharts/kafka --version 32.2.13
    ```
 9. Сборка и загрузка Docker-образов в Minikube
    ```bash
@@ -237,6 +245,8 @@ kubectl get svc -A | grep ingress
 ```bash
 helm uninstall yabank
 kubectl delete pvc data-yabank-postgresql-0
+kubectl delete pvc data-yabank-kafka-broker-0
+kubectl delete pvc data-yabank-kafka-controller-0
 helm install yabank ./
 ```
 
@@ -247,7 +257,7 @@ helm upgrade yabank ./
 
 ### Проверка конфигурации без применения:
 ```bash
-helm install yabank ./ --dry-run >1.xxx
+helm install yabank ./ --dry-run >1.yaml
 ```
 
 ## Установка curl внутри контейнера и тестирование
@@ -288,7 +298,7 @@ kubectl get endpoints yabank-exchange-application
 kubectl get events -n default
 ```
 
-### Безопастность
+### Безопасность
 
 - В проекте реализована система аутентификации и авторизации с использованием Spring Security.
 - В качестве сервера авторизации OAuth 2.0 можно использовать Keycloak, любой другой, который можно установить локально, или самописный сервер авторизации OAuth 2.0 с использованием проекта Spring Security OAuth.
@@ -306,16 +316,16 @@ kubectl get events -n default
 
 ```env
 # Путь до локального kubeconfig-файла
-KUBECONFIG_PATH=C:\Users\pav\.kube\config.yaml
+KUBECONFIG_PATH=C:\Users\vladimir\.kube\config.yaml
 
 # Параметры для GHCR
-GITHUB_USERNAME=pinfixalesha
+GITHUB_USERNAME=LuckyVo
 GITHUB_TOKEN=ghp_{токен}
 GHCR_TOKEN=ghp_{токен}
 
 # Docker registry (в данном случае GHCR)
 DOCKER_REGISTRY=ghcr.io/your-username
-GITHUB_REPOSITORY=pinfixalesha/yaBank
+GITHUB_REPOSITORY=LuckyVo/bank
 
 # Пароль к базе данных PostgreSQL
 DB_PASSWORD=12345
