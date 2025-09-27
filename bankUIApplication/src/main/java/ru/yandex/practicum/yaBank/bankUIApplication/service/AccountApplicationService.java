@@ -1,5 +1,7 @@
 package ru.yandex.practicum.yaBank.bankUIApplication.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
@@ -10,7 +12,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
-import ru.yandex.practicum.yaBank.bankUIApplication.dto.*;
+import ru.yandex.practicum.yaBank.bankUIApplication.dto.AccountDto;
+import ru.yandex.practicum.yaBank.bankUIApplication.dto.AccountRequestDto;
+import ru.yandex.practicum.yaBank.bankUIApplication.dto.ChangePasswordRequestDto;
+import ru.yandex.practicum.yaBank.bankUIApplication.dto.CurrencyRateDto;
+import ru.yandex.practicum.yaBank.bankUIApplication.dto.HttpResponseDto;
+import ru.yandex.practicum.yaBank.bankUIApplication.dto.UserDto;
+import ru.yandex.practicum.yaBank.bankUIApplication.dto.UserListResponseDto;
 
 import java.util.Collections;
 import java.util.List;
@@ -19,6 +27,8 @@ import java.util.List;
 @Service
 public class AccountApplicationService {
 
+    private static final Logger log = LoggerFactory.getLogger(AccountApplicationService.class);
+
     @Autowired
     private RestClient restClient;
 
@@ -26,11 +36,12 @@ public class AccountApplicationService {
     private String accountApplicationUrl;
 
     @Retryable(
-        value = {ResourceAccessException.class}, // Повторять при ошибках соединения
-        maxAttempts = 3,                        // Максимальное количество попыток
-        backoff = @Backoff(delay = 1000)        // Задержка между попытками (в миллисекундах)
+            value = {ResourceAccessException.class}, // Повторять при ошибках соединения
+            maxAttempts = 3,                        // Максимальное количество попыток
+            backoff = @Backoff(delay = 1000)        // Задержка между попытками (в миллисекундах)
     )
     public HttpResponseDto registerUser(UserDto userDto) {
+        log.info("Регистрация клиента "+userDto.getLogin());
         try {
             return restClient.post()
                     .uri(accountApplicationUrl+"/user/create")
@@ -39,6 +50,7 @@ public class AccountApplicationService {
                     .retrieve()
                     .body(HttpResponseDto.class);
         } catch (Exception e) {
+            log.error("Возникли проблемы при регистрация клиента "+userDto.getLogin(),e);
             return HttpResponseDto.builder()
                     .statusCode("500")
                     .statusMessage("Не удалось создать клинета. Причина: " + e.getMessage())
@@ -116,6 +128,7 @@ public class AccountApplicationService {
             backoff = @Backoff(delay = 1000)        // Задержка между попытками (в миллисекундах)
     )
     public HttpResponseDto changeInfo(UserDto userDto) {
+        log.info("Смена персональной информации клиента "+userDto.getLogin());
         try {
             return restClient.post()
                     .uri(accountApplicationUrl+"/user/edit")
@@ -124,6 +137,7 @@ public class AccountApplicationService {
                     .retrieve()
                     .body(HttpResponseDto.class);
         } catch (Exception e) {
+            log.error("Возникли проблемы при смене данных "+userDto.getLogin(),e);
             return HttpResponseDto.builder()
                     .statusCode("500")
                     .statusMessage("Не удалось создать клинета. Причина: " + e.getMessage())
@@ -138,6 +152,7 @@ public class AccountApplicationService {
             backoff = @Backoff(delay = 1000)        // Задержка между попытками (в миллисекундах)
     )
     public HttpResponseDto accountAdd(AccountRequestDto accountRequestDto) {
+        log.info("Добавление счета "+accountRequestDto.getLogin());
         try {
             return restClient.post()
                     .uri(accountApplicationUrl+"/account/add")
@@ -146,6 +161,7 @@ public class AccountApplicationService {
                     .retrieve()
                     .body(HttpResponseDto.class);
         } catch (Exception e) {
+            log.error("Возникли проблемы при добавлении счет "+accountRequestDto.getLogin(),e);
             return HttpResponseDto.builder()
                     .statusCode("500")
                     .statusMessage("Не удалось создать клинета. Причина: " + e.getMessage())

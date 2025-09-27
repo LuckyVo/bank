@@ -7,6 +7,7 @@ services:
       - "${CONFIG_SERVER_PORT}:${CONFIG_SERVER_PORT}"
     environment:
       CONFIG_SERVER_PORT: ${CONFIG_SERVER_PORT}
+      ZIPKIN_SERVER_URL: ${ZIPKIN_SERVER_URL}
     networks:
       - app-network
     healthcheck:
@@ -24,6 +25,7 @@ services:
     environment:
       EUREKA_SERVER_PORT: ${EUREKA_SERVER_PORT}
       CONFIG_SERVER_URL: ${CONFIG_SERVER_URL}
+      ZIPKIN_SERVER_URL: ${ZIPKIN_SERVER_URL}
     depends_on:
       configserver:
         condition: service_healthy
@@ -52,6 +54,8 @@ services:
       GATEWAY_SERVER_URL: ${GATEWAY_SERVER_URL}
       KEYCLOAK_TOKEN_URL: ${KEYCLOAK_TOKEN_URL}
       KEYCLOAK_ISSUER_URL: ${KEYCLOAK_ISSUER_URL}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      ZIPKIN_SERVER_URL: ${ZIPKIN_SERVER_URL}
     depends_on:
       configserver:
         condition: service_healthy
@@ -78,6 +82,8 @@ services:
       GATEWAY_SERVER_URL: ${GATEWAY_SERVER_URL}
       KEYCLOAK_TOKEN_URL: ${KEYCLOAK_TOKEN_URL}
       KEYCLOAK_ISSUER_URL: ${KEYCLOAK_ISSUER_URL}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      ZIPKIN_SERVER_URL: ${ZIPKIN_SERVER_URL}
     depends_on:
       configserver:
         condition: service_healthy
@@ -101,6 +107,8 @@ services:
       GATEWAY_SERVER_URL: ${GATEWAY_SERVER_URL}
       KEYCLOAK_TOKEN_URL: ${KEYCLOAK_TOKEN_URL}
       KEYCLOAK_ISSUER_URL: ${KEYCLOAK_ISSUER_URL}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      ZIPKIN_SERVER_URL: ${ZIPKIN_SERVER_URL}
     depends_on:
       configserver:
         condition: service_healthy
@@ -124,6 +132,8 @@ services:
       KEYCLOAK_TOKEN_URL: ${KEYCLOAK_TOKEN_URL}
       KEYCLOAK_ISSUER_URL: ${KEYCLOAK_ISSUER_URL}
       GATEWAY_SERVER_URL: ${GATEWAY_SERVER_URL}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      ZIPKIN_SERVER_URL: ${ZIPKIN_SERVER_URL}
     depends_on:
       configserver:
         condition: service_healthy
@@ -150,6 +160,8 @@ services:
       KEYCLOAK_TOKEN_URL: ${KEYCLOAK_TOKEN_URL}
       KEYCLOAK_ISSUER_URL: ${KEYCLOAK_ISSUER_URL}
       GATEWAY_SERVER_URL: ${GATEWAY_SERVER_URL}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      ZIPKIN_SERVER_URL: ${ZIPKIN_SERVER_URL}
     depends_on:
       configserver:
         condition: service_healthy
@@ -173,6 +185,8 @@ services:
       KEYCLOAK_TOKEN_URL: ${KEYCLOAK_TOKEN_URL}
       KEYCLOAK_ISSUER_URL: ${KEYCLOAK_ISSUER_URL}
       GATEWAY_SERVER_URL: ${GATEWAY_SERVER_URL}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      ZIPKIN_SERVER_URL: ${ZIPKIN_SERVER_URL}
     depends_on:
       configserver:
         condition: service_healthy
@@ -196,6 +210,8 @@ services:
       KEYCLOAK_TOKEN_URL: ${KEYCLOAK_TOKEN_URL}
       KEYCLOAK_ISSUER_URL: ${KEYCLOAK_ISSUER_URL}
       GATEWAY_SERVER_URL: ${GATEWAY_SERVER_URL}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      ZIPKIN_SERVER_URL: ${ZIPKIN_SERVER_URL}
     depends_on:
       configserver:
         condition: service_healthy
@@ -219,6 +235,8 @@ services:
       KEYCLOAK_TOKEN_URL: ${KEYCLOAK_TOKEN_URL}
       KEYCLOAK_ISSUER_URL: ${KEYCLOAK_ISSUER_URL}
       GATEWAY_SERVER_URL: ${GATEWAY_SERVER_URL}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      ZIPKIN_SERVER_URL: ${ZIPKIN_SERVER_URL}
     depends_on:
       configserver:
         condition: service_healthy
@@ -239,6 +257,7 @@ services:
       GATEWAY_SERVER_PORT: ${GATEWAY_SERVER_PORT}
       EUREKA_ZONE: ${EUREKA_ZONE}
       CONFIG_SERVER_URL: ${CONFIG_SERVER_URL}
+      ZIPKIN_SERVER_URL: ${ZIPKIN_SERVER_URL}
     depends_on:
       configserver:
         condition: service_healthy
@@ -326,8 +345,131 @@ services:
       - kafka
     environment:
       KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: yandex.kafka.ru:9092
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
       KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL: PLAINTEXT
+    networks:
+      - app-network
+
+  zipkin:
+    image: openzipkin/zipkin:3.5
+    container_name: zipkin
+    ports:
+      - "9411:9411"  # порт для UI и API Zipkin
+    environment:
+      STORAGE_TYPE: mem
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      KAFKA_TOPIC: zipkin
+    networks:
+      - app-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    hostname: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./prometheus:/etc/prometheus/
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    environment:
+      TZ: "Europe/Moscow"
+    networks:
+      - app-network
+
+  grafana:
+    image: grafana/grafana
+    user: root
+    depends_on:
+      - prometheus
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+    container_name: grafana
+    hostname: grafana
+    restart: unless-stopped
+    environment:
+      TZ: "Europe/Moscow"
+    networks:
+      - app-network
+
+
+  logstash:
+    image: docker.io/elastic/logstash:8.13.3
+    container_name: logstash
+    ports:
+      - "5044:5044"
+      - "9600:9600"
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      ELASTICSEARCH_HOSTS: ${ELASTICSEARCH_HOSTS}
+    volumes:
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+    depends_on:
+      - kafka
+      - elasticsearch
+    networks:
+      - app-network
+
+
+  elasticsearch:
+    image: docker.io/elastic/elasticsearch:8.13.3
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - bootstrap.memory_lock=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - ./.elasticsearch/data:/usr/share/elasticsearch/data
+      - ./.elasticsearch/logs:/usr/share/elasticsearch/logs
+      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./elasticsearch/templates:/usr/share/elasticsearch/config/elasticsearch/templates
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200 | grep -q 'yabank-cluster'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  setup-elasticsearch:
+    image: curlimages/curl
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    command:
+      - sh
+      - -c
+      - |
+        echo "Applying index template..."
+        curl -X PUT "http://elasticsearch:9200/_index_template/logs_template" -H 'Content-Type: application/json' -d @/templates/logs-template.json
+    volumes:
+      - ./elasticsearch/templates:/templates
+    networks:
+      - app-network
+
+
+  kibana:
+    image: docker.io/elastic/kibana:8.13.3
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    environment:
+      ELASTICSEARCH_HOSTS: ${ELASTICSEARCH_HOSTS}
     networks:
       - app-network
 
@@ -335,7 +477,14 @@ services:
 networks:
   app-network:
     driver: bridge
+    external: true
 volumes:
   redis_data:
   db-data:
   keycloak-data:
+  grafana:
+  prometheus:
+  zipkin:
+  kibana:
+  elasticsearch:
+  logstash:

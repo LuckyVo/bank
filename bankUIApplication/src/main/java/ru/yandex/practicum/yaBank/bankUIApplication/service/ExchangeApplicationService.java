@@ -1,5 +1,8 @@
 package ru.yandex.practicum.yaBank.bankUIApplication.service;
 
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
@@ -17,20 +20,24 @@ import java.util.List;
 
 
 @Service
+@RequiredArgsConstructor
 public class ExchangeApplicationService {
 
-    @Autowired
-    private RestClient restClient;
+    private static final Logger log = LoggerFactory.getLogger(ExchangeApplicationService.class);
 
     @Autowired
-    private String exchangeApplicationUrl;
+    private final RestClient restClient;
+
+    @Autowired
+    private final String exchangeApplicationUrl;
 
     @Retryable(
-        value = {ResourceAccessException.class}, // Повторять при ошибках соединения
-        maxAttempts = 3,                        // Максимальное количество попыток
-        backoff = @Backoff(delay = 1000)        // Задержка между попытками (в миллисекундах)
+            value = {ResourceAccessException.class}, // Повторять при ошибках соединения
+            maxAttempts = 3,                        // Максимальное количество попыток
+            backoff = @Backoff(delay = 1000)        // Задержка между попытками (в миллисекундах)
     )
     public List<CurrencyRateDto> getRates() {
+        log.info("Получение курсов валют");
         try {
             return restClient.get()
                     .uri(exchangeApplicationUrl+"/rates")
@@ -38,6 +45,7 @@ public class ExchangeApplicationService {
                     .retrieve()
                     .body(new ParameterizedTypeReference<List<CurrencyRateDto>>() {});
         } catch (Exception e) {
+            log.error("Возникли проблемы при получении курсов валют",e);
             return Collections.emptyList();
         }
     }

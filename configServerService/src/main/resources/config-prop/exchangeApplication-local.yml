@@ -32,6 +32,8 @@ spring:
       client-id: yandex-practicum
     properties:
       security.protocol: PLAINTEXT
+    template:
+      observation-enabled: true
 server:
   port: 8087
 eureka:
@@ -45,3 +47,19 @@ ya-bank:
 logging:
   level:
     liquibase: DEBUG
+
+management:
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+  tracing:
+    sampling:
+      probability: 1
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  metrics:
+    export:
+      prometheus:
+        enabled: true
